@@ -135,7 +135,7 @@ class UltrasoundDatasetBuild:
         :param classes: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别
         :param classes: 图像二级分类，可选
         :param caption: 图像/视频标题，text文本
-        :param box: 目标检测框  格式 [[<类别名> <x_center> <y_center> <width> <height>],[...],...] x_center指的是相对于原图的比例，如果传入的是seg图像会自动计算box
+        :param box: 目标检测框 请传入一个字典，格式 { 类别名 ：[<x_center> <y_center> ],[...],...}，  x_center指的是相对于原图的比例，如果传入的是seg图像会自动计算box
         :param tasks: 图像对应身体的哪一个部位，比如肺部超声，如果数据集没有说明就写default
         :param show_seg: 可视化分割图像转化的目标检测框，用于调试
         :return:
