@@ -42,9 +42,13 @@ class UltrasoundDatasetBuild:
             'IncludeSeg': False,
             'IncludeClasses': False,
             'IncludeCaption': False,
+            'IncludeReport': False,
+            'IncludeDemographic': False,
+            'IncludeBiochemical': False,
             'SegChannel': 0,
-            'TaskList': [],
+            'AnatomyLocation': [],
             'ClassesList': [],
+            'MeasuresList': [],
             'DataInfo': {}
         }
 
@@ -126,7 +130,7 @@ class UltrasoundDatasetBuild:
         return image
 
     def write_data(self, data, seg=None, seg_channel_name=None, classes=None, sub_classes=None,
-                   caption=None, box=None, tasks='default', show_seg=False):
+                   caption=None, report=None, box=None, anatomy='default', show_seg=False, measurement=None, demographic=None, biochemical=None):
         """
 
         :param data: 图像或视频，如果是图像，请传入一个npy格式的矩阵（h,w,c）;如果是视频，请传入一个avi格式的视频路径
@@ -135,25 +139,65 @@ class UltrasoundDatasetBuild:
         :param classes: 图像类别，请具体到对应的病种，而不是 'lesion' 这样笼统的类别
         :param classes: 图像二级分类，可选
         :param caption: 图像/视频标题，text文本
+        :param caption: 图像/视频报告，text文本
         :param box: 目标检测框 请传入一个字典，格式 { 类别名 ：[<x_center> <y_center> ],[...],...}，  x_center指的是相对于原图的比例，如果传入的是seg图像会自动计算box
-        :param tasks: 图像对应身体的哪一个部位，比如肺部超声，如果数据集没有说明就写default
+        :param anatomy: 图像对应身体的哪一个部位，比如肺部超声，如果数据集没有说明就写default
         :param show_seg: 可视化分割图像转化的目标检测框，用于调试
+        :param measurement: 输入一个字典，包含超声测量指标 eg：{"EF": 78.5, "ESV":14.9, "EDV": 69.2}
+        :param demographic: 输入一个字典，包含患者基本信息 eg：{"Gender": "male", "Age": 18, "BMI": 20.5, "BloodPressure": 23.4}, 命名请遵循驼峰命名法，value内容小写
+        :param biochemical: 输入一个字典，包含患者临床生化指标，如血液检测信息
+         eg：{"Scr(male 53~106/mu mol/L; female:44~97/mu mol/L)": 88, TC(2.8~5.17mmol/L): 4}, 命名请遵循驼峰命名法，value内容小写
         :return:
         """
 
         if seg_channel_name is None:
             seg_channel_name = ['tumor']
 
+        if measurement is not None:
+            assert isinstance(measurement, dict)
+            for key, _ in measurement.items():
+                if key not in self.dataset_info['MeasuresList']:
+                    self.dataset_info['MeasuresList'].append(key)
+                    self.dataset_info['MeasuresList'].sort()
+
+        if classes not in self.dataset_info['ClassesList']:
+            self.dataset_info['ClassesList'].append(classes)
+            self.dataset_info['ClassesList'].sort()
+
+        if anatomy not in self.dataset_info['AnatomyLocation']:
+            self.dataset_info['AnatomyLocation'].append(anatomy)
+            self.dataset_info['AnatomyLocation'].sort()
+
+        if caption is not None:
+            self.dataset_info['IncludeCaption'] = True
+
+        if report is not None:
+            self.dataset_info['IncludeReport'] = True
+
+        if demographic is not None:
+            assert isinstance(demographic, dict)
+            self.dataset_info['IncludeDemographic'] = True
+
+        if biochemical is not None:
+            assert isinstance(biochemical, dict)
+            self.dataset_info['IncludeBiochemical'] = True
+
+
+
         data_name = 'case%06d'%self.write_cnt
         DataInfo = {
-            'tasks': tasks,
+            'anatomy_location': anatomy,
             'data_path': None,
             'seg_path': None,
             'seg_channel_name': seg_channel_name,
             'classes': classes,
             'sub_classes': sub_classes,
             'caption': caption,
+            'report': report,
             'box': box,
+            'measurement': measurement,
+            'demographic': demographic,
+            'biochemical': biochemical,
         }
 
         if classes is not None:
@@ -196,21 +240,12 @@ class UltrasoundDatasetBuild:
 
                         box_list.append(boxes)
                     DataInfo['box'] = box_list
-
-
-
-
         elif self.DataType == 'video':
             assert data.lower().endswith('avi')
             assert seg is None
             save_data_name = 'case%06d.avi' % self.write_cnt
             shutil.copy(data, os.path.join(self.data_save_dir, save_data_name))
             DataInfo['data_path'] = os.path.join(self.dataset_info['dateset_name'], self.DataType, save_data_name)
-
-        if classes not in self.dataset_info['ClassesList']:
-            self.dataset_info['ClassesList'].append(classes)
-        if tasks not in self.dataset_info['TaskList']:
-            self.dataset_info['TaskList'].append(tasks)
 
         self.dataset_info['DataInfo'][data_name] = DataInfo
 

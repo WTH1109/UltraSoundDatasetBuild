@@ -39,7 +39,7 @@ for class_name in classes_list:
                 seg2 = seg2.astype(bool)
                 seg = seg + seg2
             seg = np.expand_dims(seg, 0)
-            ud.write_data(img, seg, classes=class_name, caption=None, box=None, tasks=tasks)
+            ud.write_data(img, seg, classes=class_name, caption=None, box=None, anatomy=tasks)
 
 
 ud.write_json()
