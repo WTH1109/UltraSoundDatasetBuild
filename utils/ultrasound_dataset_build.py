@@ -146,7 +146,7 @@ class UltrasoundDatasetBuild:
         :param measurement: 输入一个字典，包含超声测量指标 eg：{"EF": 78.5, "ESV":14.9, "EDV": 69.2}
         :param demographic: 输入一个字典，包含患者基本信息 eg：{"Gender": "male", "Age": 18, "BMI": 20.5, "BloodPressure": 23.4}, 命名请遵循驼峰命名法，value内容小写
         :param biochemical: 输入一个字典，包含患者临床生化指标，如血液检测信息
-         eg：{"Scr(male 53~106/mu mol/L; female:44~97/mu mol/L)": 88, TC(2.8~5.17mmol/L): 4}, 命名请遵循驼峰命名法，value内容小写
+        eg：{"Scr(male $53\sim106\mu mol/L$; female:$44\sim97\mu mol/L$)": 88, TC($2.8\sim5.17mmol/L$): 4}, 命名请遵循驼峰命名法，value内容小写
         :return:
         """
 
